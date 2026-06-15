@@ -1,0 +1,3 @@
+display_name: 绿茵神算 Advanced
+short_description: 2026 世界杯高级统计预测引擎
+default_prompt: 使用绿茵神算 Advanced 预测一场 2026 世界杯比赛，输出严格 JSON，并解释关键因素。

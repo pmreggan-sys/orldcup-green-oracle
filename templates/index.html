@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-shell">
+  <header class="hero">
+    <div class="hero__overlay"></div>
+    <nav class="topbar">
+      <div class="brand">
+        <span class="brand__mark">26</span>
+        <div>
+          <p class="brand__kicker">{{ text.page_title }}</p>
+          <h1 class="brand__title">{{ text.page_subtitle }}</h1>
+        </div>
+      </div>
+      <div class="topbar__actions">
+        <span class="status-pill {{ 'status-pill--live' if settings.live_mode_enabled else 'status-pill--fallback' }}">
+          {{ text.health_live if settings.live_mode_enabled else text.health_fallback }}
+        </span>
+        {% if schedule_snapshot.dataFreshness == 'offline_preview' %}
+        <span class="status-pill status-pill--preview">{{ text.hero_preview_badge }}</span>
+        {% endif %}
+        <a class="lang-switch" href="{{ '/' if lang == 'en' else '/en' }}">{{ '中文' if lang == 'en' else 'English' }}</a>
+      </div>
+    </nav>
+
+    <div class="hero__body hero__body--dense">
+      <div class="hero__copy">
+        <p class="section-kicker">{{ text.hero_kicker }}</p>
+        <h2>{{ text.hero_title }}</h2>
+        <p class="hero__description">{{ text.hero_body }}</p>
+        <div class="hero__meta">
+          <span>{{ text.hero_meta }}</span>
+          <span>{{ text.hero_primary_summary }}</span>
+        </div>
+        <div class="hero__buttons">
+          <a href="#schedule" class="button button--primary">{{ text.cta_primary }}</a>
+          <a href="#predictor" class="button button--ghost">{{ text.cta_secondary }}</a>
+        </div>
+      </div>
+
+      <div class="hero__stack">
+        <aside class="lead-panel">
+          <div class="lead-panel__header">
+            <div>
+              <p class="section-kicker">{{ text.hero_primary_match }}</p>
+              <h3>{{ lead_fixture.team_a.name_zh if lang == 'zh' else lead_fixture.team_a.name_en }} vs {{ lead_fixture.team_b.name_zh if lang == 'zh' else lead_fixture.team_b.name_en }}</h3>
+            </div>
+            <span class="lead-panel__badge">{{ lead_fixture.stage_label if lead_fixture else text.schedule_live_upcoming }}</span>
+          </div>
+          {% if lead_fixture %}
+          <p class="lead-panel__summary">{{ text.hero_primary_summary }}</p>
+          <div class="lead-panel__meta">
+            <span>{{ lead_fixture.status_label }}</span>
+            {% if lead_fixture.kickoff_display %}<span>{{ lead_fixture.kickoff_display }} 北京时间</span>{% endif %}
+            {% if lead_fixture.venue %}<span>{{ lead_fixture.venue }}</span>{% endif %}
+          </div>
+          <button
+            type="button"
+            class="button button--primary lead-panel__button"
+            data-prefill-team-a="{{ lead_fixture.team_a.slug }}"
+            data-prefill-team-b="{{ lead_fixture.team_b.slug }}"
+            data-prefill-stage="{{ lead_fixture.stage }}"
+            data-prefill-fixture-id="{{ lead_fixture.fixture_id }}"
+          >
+            {{ text.fixture_cta }}
+          </button>
+          {% endif %}
+        </aside>
+
+        <aside class="scoreboard-panel scoreboard-panel--compact">
+          <div class="scoreboard-panel__header">
+            <span>{{ text.schedule_updated_at }}</span>
+            <span>{{ schedule_updated_display }} 北京时间</span>
+          </div>
+          <div class="scoreboard-panel__body">
+            <div class="mini-match mini-match--status">
+              <p>{{ text.source_freshness }}</p>
+              <strong>{{ schedule_freshness_label }}</strong>
+              <span>{{ schedule_snapshot.dataDelayNoteZh if lang == 'zh' else schedule_snapshot.dataDelayNoteEn }}</span>
+            </div>
+            <div class="mini-match mini-match--bullets">
+              {% for line in schedule_bullets[:2] %}
+              <p>{{ line }}</p>
+              {% endfor %}
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="schedule" class="section section--schedule">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">{{ text.hero_kicker }}</p>
+          <h2>{{ text.schedule_title }}</h2>
+        </div>
+        <p>{{ text.schedule_subtitle }}</p>
+      </div>
+
+      {% set quick_fixtures = schedule_sections.live_upcoming + schedule_sections.knockout + schedule_sections.recent %}
+      <div class="schedule-rail">
+        <div class="schedule-rail__header">
+          <h3>{{ text.schedule_rail_title }}</h3>
+          <span>{{ quick_fixtures|length }}</span>
+        </div>
+        {% if quick_fixtures %}
+        <div class="schedule-rail__track">
+          {% for fixture in quick_fixtures %}
+          <button
+            type="button"
+            class="schedule-chip {{ 'schedule-chip--knockout' if fixture.knockout else '' }}"
+            data-prefill-team-a="{{ fixture.team_a.slug }}"
+            data-prefill-team-b="{{ fixture.team_b.slug }}"
+            data-prefill-stage="{{ fixture.stage }}"
+            data-prefill-fixture-id="{{ fixture.fixture_id }}"
+          >
+            <span>{{ fixture.stage_label }}</span>
+            <strong>{{ fixture.team_a.name_zh if lang == 'zh' else fixture.team_a.name_en }} vs {{ fixture.team_b.name_zh if lang == 'zh' else fixture.team_b.name_en }}</strong>
+            <em>{{ fixture.status_label }}</em>
+          </button>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="schedule-empty">
+          <strong>{{ text.schedule_empty_title }}</strong>
+          <p>{{ text.schedule_empty_body }}</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="schedule-columns schedule-columns--focused">
+        <article class="schedule-panel schedule-panel--primary">
+          <div class="schedule-panel__header">
+            <h3>{{ text.schedule_live_upcoming }}</h3>
+            <span>{{ schedule_sections.live_upcoming|length }}</span>
+          </div>
+          <div class="schedule-list">
+            {% for fixture in schedule_sections.live_upcoming %}
+            <button
+              type="button"
+              class="schedule-card"
+              data-prefill-team-a="{{ fixture.team_a.slug }}"
+              data-prefill-team-b="{{ fixture.team_b.slug }}"
+              data-prefill-stage="{{ fixture.stage }}"
+              data-prefill-fixture-id="{{ fixture.fixture_id }}"
+            >
+              <div class="schedule-card__top">
+                <span>{{ fixture.status_label }}</span>
+                <span>{{ fixture.stage_label }}</span>
+              </div>
+              <strong>{{ fixture.team_a.name_zh if lang == 'zh' else fixture.team_a.name_en }} vs {{ fixture.team_b.name_zh if lang == 'zh' else fixture.team_b.name_en }}</strong>
+              <p>
+                {% if fixture.kickoff_display %}{{ fixture.kickoff_display }} 北京时间{% endif %}
+                {% if fixture.venue %} · {{ fixture.venue }}{% endif %}
+              </p>
+              {% if fixture.group %}<em>{{ text.fixture_group }} {{ fixture.group[-1] if fixture.group.startswith('GROUP_') else fixture.group }}</em>{% endif %}
+            </button>
+            {% endfor %}
+          </div>
+        </article>
+
+        <article class="schedule-panel">
+          <div class="schedule-panel__header">
+            <h3>{{ text.schedule_knockout }}</h3>
+            <span>{{ schedule_sections.knockout|length }}</span>
+          </div>
+          <div class="schedule-list">
+            {% for fixture in schedule_sections.knockout %}
+            <button
+              type="button"
+              class="schedule-card schedule-card--knockout"
+              data-prefill-team-a="{{ fixture.team_a.slug }}"
+              data-prefill-team-b="{{ fixture.team_b.slug }}"
+              data-prefill-stage="{{ fixture.stage }}"
+              data-prefill-fixture-id="{{ fixture.fixture_id }}"
+            >
+              <div class="schedule-card__top">
+                <span>{{ fixture.status_label }}</span>
+                <span>{{ fixture.stage_label }}</span>
+              </div>
+              <strong>{{ fixture.team_a.name_zh if lang == 'zh' else fixture.team_a.name_en }} vs {{ fixture.team_b.name_zh if lang == 'zh' else fixture.team_b.name_en }}</strong>
+              <p>
+                {% if fixture.kickoff_display %}{{ fixture.kickoff_display }} 北京时间{% endif %}
+                {% if fixture.venue %} · {{ fixture.venue }}{% endif %}
+              </p>
+              <em>{{ text.advance_title }}</em>
+            </button>
+            {% endfor %}
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="predictor" class="section section--predictor">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">{{ text.manual_entry }}</p>
+          <h2>{{ text.form_title }}</h2>
+        </div>
+        <p>{{ text.form_subtitle }}</p>
+      </div>
+      <div class="predictor-grid">
+        <aside class="tool-card">
+          <p class="section-kicker">{{ text.manual_quick_title }}</p>
+          <h3>{{ text.form_title }}</h3>
+          <p>{{ text.manual_quick_body }}</p>
+          <div class="tool-card__bullets">
+            <span>{{ text.team_a }} / {{ text.team_b }}</span>
+            <span>{{ text.stage }}</span>
+            <span>{{ text.submit }}</span>
+          </div>
+        </aside>
+        <form
+          id="prediction-form"
+          class="prediction-form"
+          hx-post="/predict"
+          hx-target="#prediction-result"
+          hx-swap="innerHTML"
+        >
+          <input type="hidden" name="lang" value="{{ lang }}">
+          <input type="hidden" name="fixtureId" value="{{ lead_fixture.fixture_id if lead_fixture else '' }}">
+          <label>
+            <span>{{ text.team_a }}</span>
+            <select name="teamA" required>
+              {% for option in teams %}
+              <option value="{{ option.slug }}" {% if lead_fixture and option.slug == lead_fixture.team_a.slug %}selected{% elif not lead_fixture and option.slug == 'mexico' %}selected{% endif %}>{{ option.name_en }} / {{ option.name_zh }} · {{ text.group }} {{ option.group }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            <span>{{ text.team_b }}</span>
+            <select name="teamB" required>
+              {% for option in teams %}
+              <option value="{{ option.slug }}" {% if lead_fixture and option.slug == lead_fixture.team_b.slug %}selected{% elif not lead_fixture and option.slug == 'south-africa' %}selected{% endif %}>{{ option.name_en }} / {{ option.name_zh }} · {{ text.group }} {{ option.group }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            <span>{{ text.stage }}</span>
+            <select name="stage" required>
+              {% for value, label in stage_labels.items() %}
+              <option value="{{ value }}" {% if lead_fixture and value == lead_fixture.stage %}selected{% elif not lead_fixture and value == 'group' %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <div class="prediction-form__actions">
+            <button type="button" class="button button--ghost" data-swap-teams>{{ text.swap }}</button>
+            <button type="submit" class="button button--primary">{{ text.submit }}</button>
+          </div>
+        </form>
+
+        <div id="prediction-result" class="result-shell">
+          {% include "partials/result_placeholder.html" %}
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--sync section--folded">
+      <details class="fold-panel">
+        <summary class="fold-panel__summary">
+          <span>{{ text.sync_title }}</span>
+          <em>{{ text.section_fold_hint }}</em>
+        </summary>
+        <div class="ticker-board">
+          <div class="ticker-board__news">
+            {% for line in schedule_bullets[:3] %}
+            <p>{{ line }}</p>
+            {% endfor %}
+          </div>
+          <div class="ticker-board__fixtures">
+            <div class="ticker-fixture">
+              <span>{{ text.schedule_updated_at }}</span>
+              <strong>{{ schedule_updated_display }} 北京时间</strong>
+              <em>{{ text.source_freshness }} · {{ schedule_freshness_label }}</em>
+            </div>
+            <div class="ticker-fixture">
+              <span>{{ text.hero_preview_badge if schedule_snapshot.dataFreshness == 'offline_preview' else text.schedule_title }}</span>
+              <strong>{{ text.schedule_empty_title if schedule_snapshot.dataFreshness == 'offline_preview' else text.schedule_live_upcoming }}</strong>
+              <em>{{ schedule_snapshot.dataDelayNoteZh if lang == 'zh' else schedule_snapshot.dataDelayNoteEn }}</em>
+            </div>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <section class="section section--method section--folded">
+      <details class="fold-panel">
+        <summary class="fold-panel__summary">
+          <span>{{ text.method_title }}</span>
+          <em>{{ text.section_fold_hint }}</em>
+        </summary>
+        <div class="method-grid method-grid--compact">
+          <article class="method-card">
+            <h3>{{ text.method_1_title }}</h3>
+            <p>{{ text.method_1_body }}</p>
+          </article>
+          <article class="method-card">
+            <h3>{{ text.method_2_title }}</h3>
+            <p>{{ text.method_2_body }}</p>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <section id="groups" class="section section--groups">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">A - L</p>
+          <h2>{{ text.groups_title }}</h2>
+        </div>
+        <p>{{ text.groups_subtitle }}</p>
+      </div>
+      <div class="groups-toolbar">
+        <button type="button" class="button button--inline is-active" data-group-filter="focus">{{ text.groups_toggle_focus }}</button>
+        <button type="button" class="button button--inline" data-group-filter="compact">{{ text.groups_toggle_compact }}</button>
+        <button type="button" class="button button--inline" data-group-filter="all">{{ text.groups_toggle_all }}</button>
+      </div>
+      <p class="groups-caption">{{ text.groups_tooltip }}</p>
+      <div class="group-selector">
+        {% for bucket in group_tables %}
+        <button
+          type="button"
+          class="group-pill {{ 'is-active' if bucket.group == selected_group else '' }}"
+          data-group-switch="{{ bucket.group }}"
+          data-group-bucket="{{ 'focus' if bucket.is_focus else 'all' }}"
+        >
+          <span>{{ text.group }}</span>
+          <strong>{{ bucket.group }}</strong>
+        </button>
+        {% endfor %}
+      </div>
+      <div class="group-grid group-grid--compact">
+        {% for bucket in group_tables %}
+        {% set rows = bucket.rows %}
+        <article
+          class="group-card group-card--detail {% if not bucket.is_focus %}group-card--secondary{% endif %} {% if bucket.group == selected_group %}is-active{% endif %}"
+          data-group-panel="{{ bucket.group }}"
+          data-group-bucket="{{ 'focus' if bucket.is_focus else 'all' }}"
+        >
+          <header>
+            <span>{{ text.group }}</span>
+            <h3>{{ bucket.group }}</h3>
+          </header>
+          <ul class="group-card__details group-card__details--always-open">
+            {% for row in rows %}
+            {% set team = row.team if row.team is defined else row %}
+            <li>
+              <div>
+                <strong>{{ team.name_zh if lang == 'zh' else team.name_en }}</strong>
+                <p>{{ tier_labels[team.tier_zh][lang] }}</p>
+              </div>
+              {% if row.points is defined %}
+              <div class="standings-meta">
+                <span>Pts {{ row.points }}</span>
+                <span>GD {{ row.goalDifference }}</span>
+              </div>
+              {% endif %}
+              <div class="team-tags">
+                {% if team.host %}<span>{{ text.host }}</span>{% endif %}
+                {% if team.newcomer %}<span>{{ text.newcomer }}</span>{% endif %}
+              </div>
+              <button
+                type="button"
+                class="prefill-link"
+                data-prefill-team-a="{{ team.slug }}"
+                data-prefill-team-b="{{ lead_fixture.team_b.slug if lead_fixture else 'mexico' }}"
+                data-prefill-stage="group"
+              >
+                {{ text.prefill }}
+              </button>
+            </li>
+            {% endfor %}
+          </ul>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div>
+      <h2>{{ text.disclaimer_title }}</h2>
+      <p>{{ text.disclaimer_body }}</p>
+    </div>
+    <div class="footer__license">
+      <p>{{ text.notice_default }}</p>
+      <p>{{ schedule_snapshot.dataDelayNoteZh if lang == 'zh' else schedule_snapshot.dataDelayNoteEn }}</p>
+    </div>
+  </footer>
+</div>
+{% endblock %}

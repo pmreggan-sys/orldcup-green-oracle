@@ -1,0 +1,71 @@
+services:
+  - type: web
+    name: green-oracle-2026
+    env: docker
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
+    disk:
+      name: green-oracle-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_NAME
+        value: Green Oracle 2026
+      - key: APP_BASE_URL
+        sync: false
+      - key: FOOTBALL_DATA_COMPETITION_CODE
+        value: WC
+      - key: SCHEDULE_CACHE_PATH
+        value: schedule_cache.json
+      - key: RENDER_DISK_MOUNT_PATH
+        value: /var/data
+      - key: INTERNAL_SYNC_TOKEN
+        generateValue: true
+      - key: OPENAI_BASE_URL
+        value: ""
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: ANTHROPIC_BASE_URL
+        value: https://claudecode.top
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-4-20250514
+      - key: CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC
+        value: "true"
+      - key: CLAUDE_CODE_ATTRIBUTION_HEADER
+        value: "0"
+      - key: REQUEST_TIMEOUT_S
+        value: "60"
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "10"
+      - key: DEMO_FALLBACK_ENABLED
+        value: "true"
+      - key: FOOTBALL_DATA_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_TRANSLATION_MODEL
+        sync: false
+      - key: ANTHROPIC_AUTH_TOKEN
+        sync: false
+
+  - type: cron
+    name: green-oracle-2026-sync
+    env: docker
+    dockerfilePath: ./Dockerfile
+    schedule: "0 * * * *"
+    command: >-
+      python3 -c "import os, sys, urllib.request; req = urllib.request.Request(
+      f\"{os.environ['APP_BASE_URL'].rstrip('/')}/internal/sync\",
+      method='POST',
+      headers={'x-internal-sync-token': os.environ['INTERNAL_SYNC_TOKEN']}
+      ); urllib.request.urlopen(req).read()"
+    envVars:
+      - key: APP_BASE_URL
+        sync: false
+      - key: INTERNAL_SYNC_TOKEN
+        fromService:
+          name: green-oracle-2026
+          type: web
+          envVarKey: INTERNAL_SYNC_TOKEN

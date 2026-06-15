@@ -1,0 +1,10 @@
+<section class="result-card result-card--placeholder">
+  <div class="result-card__header">
+    <span class="result-badge">{{ text.engine_badge }} / {{ text.live_badge }}</span>
+    <strong>{{ text.result_title }}</strong>
+  </div>
+  <div class="placeholder-body">
+    <p>{{ text.notice_default }}</p>
+    <p>{{ text.hero_primary_summary if text.hero_primary_summary is defined else text.form_subtitle }}</p>
+  </div>
+</section>

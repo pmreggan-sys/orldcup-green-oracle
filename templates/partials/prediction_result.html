@@ -1,0 +1,136 @@
+<section class="result-card">
+  <div class="result-card__header">
+    <span class="result-badge {{ 'result-badge--live' if mode == 'live' else 'result-badge--fallback' if mode == 'fallback' else 'result-badge--engine' }}">
+      {{ text.live_badge if mode == 'live' else text.fallback_badge if mode == 'fallback' else text.engine_badge }}
+    </span>
+    <div class="result-card__meta">
+      <strong>{{ text.result_title }}</strong>
+      <p>{{ result_source_label }}</p>
+    </div>
+  </div>
+
+  {% if prediction.matchContext %}
+  <div class="context-strip">
+    <span>{{ prediction.matchContext.stageLabelZh if lang == 'zh' else prediction.matchContext.stageLabelEn }}</span>
+    {% if prediction.matchContext.venueZh or prediction.matchContext.venueEn %}
+    <span>{{ prediction.matchContext.venueZh if lang == 'zh' else prediction.matchContext.venueEn }}</span>
+    {% endif %}
+    <span>{{ text.fixture_status }} · {{ text.status_labels[prediction.matchContext.status] }}</span>
+  </div>
+  {% endif %}
+
+  <div class="result-verdict">
+    <p class="result-verdict__kicker">{{ text.result_title }}</p>
+    <h3>{{ result_headline }}</h3>
+    <p>{{ result_subheadline }}</p>
+  </div>
+
+  <div class="scoreboard">
+    <div class="scoreboard__team">
+      <span>{{ prediction.teamA.nameZh if lang == 'zh' else prediction.teamA.nameEn }}</span>
+      <strong>{{ prediction.teamA.winProb }}%</strong>
+    </div>
+    <div class="scoreboard__center">
+      <p>{{ text.scoreline }}</p>
+      <h3>{{ prediction.predictedScore }}</h3>
+      <span>{{ text.confidence }} · {{ confidence_label }}</span>
+    </div>
+    <div class="scoreboard__team">
+      <span>{{ prediction.teamB.nameZh if lang == 'zh' else prediction.teamB.nameEn }}</span>
+      <strong>{{ prediction.teamB.winProb }}%</strong>
+    </div>
+  </div>
+
+  <div class="probability-bars">
+    <div class="probability-row">
+      <span>{{ prediction.teamA.nameZh if lang == 'zh' else prediction.teamA.nameEn }}</span>
+      <div class="probability-bar"><i style="width: {{ prediction.teamA.winProb }}%"></i></div>
+      <strong>{{ prediction.teamA.winProb }}%</strong>
+    </div>
+    <div class="probability-row">
+      <span>{{ text.draw }}</span>
+      <div class="probability-bar probability-bar--draw"><i style="width: {{ prediction.drawProb }}%"></i></div>
+      <strong>{{ prediction.drawProb }}%</strong>
+    </div>
+    <div class="probability-row">
+      <span>{{ prediction.teamB.nameZh if lang == 'zh' else prediction.teamB.nameEn }}</span>
+      <div class="probability-bar"><i style="width: {{ prediction.teamB.winProb }}%"></i></div>
+      <strong>{{ prediction.teamB.winProb }}%</strong>
+    </div>
+  </div>
+
+  {% if prediction.knockout %}
+  <div class="advance-panel">
+    <h4>{{ text.advance_title }}</h4>
+    <p>{{ prediction.knockout.note }}</p>
+    <div class="advance-panel__grid">
+      {% for team_name, probability in prediction.knockout.advanceProb.items() %}
+      <div>
+        <span>{{ team_name }}</span>
+        <strong>{{ probability }}%</strong>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="result-grid result-grid--story">
+    <article>
+      <h4>{{ text.factors }}</h4>
+      <ul class="factor-list">
+        {% for factor in prediction.keyFactors %}
+        <li>{{ factor.zh if lang == 'zh' else factor.en }}</li>
+        {% endfor %}
+      </ul>
+    </article>
+    <article>
+      <h4>{{ text.analysis }}</h4>
+      <p>{{ prediction.analysis.zh if lang == 'zh' else prediction.analysis.en }}</p>
+      {% if translation_notice %}
+      <p class="translation-notice">{{ translation_notice }}</p>
+      {% endif %}
+    </article>
+  </div>
+
+  <div class="players-grid">
+    <h4>{{ text.players }}</h4>
+    <div class="players-grid__cards">
+      {% for player in prediction.playersToWatch %}
+      <article class="player-card">
+        <span>{{ player.teamSlug }}</span>
+        <strong>{{ player.playerZh if lang == 'zh' else player.playerEn }}</strong>
+        <p>{{ player.reasonZh if lang == 'zh' else player.reasonEn }}</p>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="model-sheet">
+    <h4>{{ text.model_sheet_title }}</h4>
+    <div class="model-sheet__grid">
+      <article>
+        <h5>{{ text.model_sheet_engine }}</h5>
+        {% for line in engine_summary or [] %}
+        <p>{{ line }}</p>
+        {% endfor %}
+      </article>
+      <article>
+        <h5>{{ text.model_sheet_quality }}</h5>
+        {% for line in quality_summary or [] %}
+        <p>{{ line }}</p>
+        {% endfor %}
+      </article>
+      <article>
+        <h5>{{ text.model_sheet_priors }}</h5>
+        {% for line in priors_summary or [] %}
+        <p>{{ line }}</p>
+        {% endfor %}
+      </article>
+    </div>
+  </div>
+
+  <footer class="result-card__footer">
+    <p>{{ notice.zh if lang == 'zh' else notice.en }}</p>
+    <span>{{ text.generated_at }}: {{ generated_at_display }} 北京时间</span>
+  </footer>
+</section>
