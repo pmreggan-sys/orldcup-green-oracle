@@ -4,10 +4,6 @@ services:
     env: docker
     dockerfilePath: ./Dockerfile
     autoDeploy: true
-    disk:
-      name: green-oracle-data
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: APP_ENV
         value: production
@@ -19,8 +15,6 @@ services:
         value: WC
       - key: SCHEDULE_CACHE_PATH
         value: schedule_cache.json
-      - key: RENDER_DISK_MOUNT_PATH
-        value: /var/data
       - key: INTERNAL_SYNC_TOKEN
         generateValue: true
       - key: OPENAI_BASE_URL
@@ -49,23 +43,3 @@ services:
         sync: false
       - key: ANTHROPIC_AUTH_TOKEN
         sync: false
-
-  - type: cron
-    name: green-oracle-2026-sync
-    env: docker
-    dockerfilePath: ./Dockerfile
-    schedule: "0 * * * *"
-    dockerCommand: >-
-      python3 -c "import os, sys, urllib.request; req = urllib.request.Request(
-      f\"{os.environ['APP_BASE_URL'].rstrip('/')}/internal/sync\",
-      method='POST',
-      headers={'x-internal-sync-token': os.environ['INTERNAL_SYNC_TOKEN']}
-      ); urllib.request.urlopen(req).read()"
-    envVars:
-      - key: APP_BASE_URL
-        sync: false
-      - key: INTERNAL_SYNC_TOKEN
-        fromService:
-          name: green-oracle-2026
-          type: web
-          envVarKey: INTERNAL_SYNC_TOKEN

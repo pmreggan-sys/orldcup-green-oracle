@@ -11,8 +11,8 @@ A bilingual FastAPI website that turns `worldcup2026-green-oracle` into a schedu
 - Knockout support with both 90-minute probabilities and advance outlook
 - Prompt section six generated from the synced schedule snapshot
 - JSON APIs at `GET /api/schedule` and `POST /api/predict`
-- Protected `POST /internal/sync` endpoint for Render cron refreshes
-- Docker and `render.yaml` for one web service plus one hourly cron service
+- Protected `POST /internal/sync` endpoint for optional manual refreshes
+- Docker and `render.yaml` for a single web service deployment
 
 ## Quick Start
 
@@ -40,7 +40,6 @@ Core settings:
 - `FOOTBALL_DATA_API_KEY`
 - `FOOTBALL_DATA_COMPETITION_CODE`
 - `SCHEDULE_CACHE_PATH`
-- `RENDER_DISK_MOUNT_PATH`
 - `INTERNAL_SYNC_TOKEN`
 - `REQUEST_TIMEOUT_S`
 - `RATE_LIMIT_PER_MINUTE`
@@ -65,9 +64,8 @@ POST /api/predict
 
 ## Render Deployment
 
-- `render.yaml` defines one Docker web service and one hourly cron service.
-- The web service stores the normalized schedule snapshot on a persistent disk mounted at `/var/data`.
-- The cron service calls `POST /internal/sync` with `INTERNAL_SYNC_TOKEN`.
+- `render.yaml` defines one Docker web service for the simplified free-tier deployment path.
+- In this mode the app can still sync live schedule data during startup and serve predictions without the paid persistent disk + cron setup.
 - Set `APP_BASE_URL` to the temporary Render domain after the service is created.
 
 ## Upstream Attribution
