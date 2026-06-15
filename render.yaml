@@ -55,7 +55,7 @@ services:
     env: docker
     dockerfilePath: ./Dockerfile
     schedule: "0 * * * *"
-    command: >-
+    dockerCommand: >-
       python3 -c "import os, sys, urllib.request; req = urllib.request.Request(
       f\"{os.environ['APP_BASE_URL'].rstrip('/')}/internal/sync\",
       method='POST',
