@@ -12,7 +12,7 @@ A bilingual FastAPI website that turns `worldcup2026-green-oracle` into a schedu
 - Prompt section six generated from the synced schedule snapshot
 - JSON APIs at `GET /api/schedule` and `POST /api/predict`
 - Protected `POST /internal/sync` endpoint for optional manual refreshes
-- Docker and `render.yaml` for a single web service deployment
+- Docker and `railway.json` for the shortest Railway deployment path
 
 ## Quick Start
 
@@ -62,11 +62,18 @@ POST /api/predict
 }
 ```
 
-## Render Deployment
+## Railway Deployment
 
-- `render.yaml` defines one Docker web service for the simplified free-tier deployment path.
-- In this mode the app can still sync live schedule data during startup and serve predictions without the paid persistent disk + cron setup.
-- Set `APP_BASE_URL` to the temporary Render domain after the service is created.
+- Import the GitHub repository into Railway and let it build from the included Dockerfile.
+- Railway injects `PORT`, which the container now honors automatically.
+- Set `APP_BASE_URL` to the generated Railway public domain after the service is created.
+- Required variables for the current working setup:
+  - `FOOTBALL_DATA_API_KEY`
+  - `ANTHROPIC_BASE_URL`
+  - `ANTHROPIC_AUTH_TOKEN`
+  - `ANTHROPIC_MODEL`
+  - `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`
+  - `CLAUDE_CODE_ATTRIBUTION_HEADER`
 
 ## Upstream Attribution
 
